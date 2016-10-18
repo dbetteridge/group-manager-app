@@ -1,0 +1,71 @@
+
+searchGroup(groupName){
+        var headers = new Headers();
+        headers.append('Content-Type', 'application/json');
+        headers.append('credentials', 'same-origin');
+        fetch("https://localhost:44367/api/Group/" + groupName, {headers: headers})
+        .then((response)=>{
+            return response.json();
+        })
+        .then((json)=>{        
+            document.getElementById("groupDetails").innerText = JSON.stringify(json);
+        })
+    }
+
+    getAll(){
+        var headers = new Headers();
+        headers.append('Content-Type', 'application/json');
+        headers.append('credentials', 'same-origin');
+        fetch("https://localhost:44367/api/Group/", {headers: headers})
+        .then((response)=>{
+            return response.json();
+        })
+        .then((json)=>{ 
+            this.setState({
+                allGroups : json,
+                timer: this.state.timer
+            })       
+            
+        })
+    }
+
+    typeWait(groupName){
+        this.getAll();
+        clearTimeout(this.state.timer);
+        this.setState({
+            timer : setTimeout(this.filterGroups(this.state.allGroups,groupName()),1000),
+            allGroups: this.state.allGroups
+        });
+        return null;
+    }
+    setBox(newValue){       
+        document.getElementById("groupName").value = newValue.innerHTML;
+        document.getElementById("groupDropdown").classList = "dropdown-content";
+    }
+    filterGroups(allGroups, groupName){
+        document.getElementById("groupDropdown").innerHTML = "";
+        document.getElementById("groupDropdown").classList = "dropdown-content";
+        var filteredGroups 
+        filteredGroups = allGroups.filter((value, index)=>{
+            if(value.GroupName.search(groupName) > -1){
+                return true;
+            }     
+            return false;        
+        })
+        filteredGroups.map((item)=>{
+            var groupID = item.GroupName.replace(" ", "") + "ID";
+            this.setState({
+                dropdowns : this.state.dropdowns.push("<div id="+groupID+">"+item.GroupName+"</div>"),
+                allGroups: this.state.allGroups,
+                timer: this.state.timer     
+            });                   
+            return false;  
+        });    
+            
+        var items = document.getElementById("groupDropdown").childNodes;
+        for(var i=0;i<items.length;i++){
+            var set = this.setBox.bind(null,items[i]);          
+            document.getElementById(items[i].id).onclick = set;
+        }
+        document.getElementById("groupDropdown").classList += " show";
+    }
